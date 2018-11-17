@@ -14,6 +14,16 @@ All further instructions will assume that you've done that and dealth with all p
 
 Run `python manage.py runserver` to launch an internal Django web-server (don't use it in production). Please mind the console output: you may need to run `python manage.py migrade` to run pending database migrations first. Then you'll be able to see the server running at `localhost:8000`.
 
+## Project structure
+
+- *manage.py* -- default Django entry point
+- *Pipfile* -- for pipenv
+- *Pipfile.lock* -- for pipenv
+- *db.sqlite3* -- automatically created by Django for local testing, ignored by git
+- *.gitignore* - git ignore file
+- *etoya* -- Django main project folder
+- *posts* -- Django posts app folder
+
 ## Deployment checklist
 
-- [ ] Go through settings.py
+- [ ] Go through *etoya/settings.py*
