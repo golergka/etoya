@@ -21,6 +21,7 @@ Run `python manage.py runserver` to launch an internal Django web-server (don't 
 - *Pipfile.lock* -- for pipenv
 - *db.sqlite3* -- automatically created by Django for local testing, ignored by git
 - *.gitignore* - git ignore file
+- *.idea* -- Pycharm IDE folder
 - *etoya* -- Django main project folder
 - *posts* -- Django posts app folder
 
