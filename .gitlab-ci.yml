@@ -51,8 +51,8 @@ test:
   # and then adding `--settings app.settings.ci` (or similar) to the test command
 
   variables:
-    LC_ALL=C.UTF-8
-    LANG=C.UTF8
+    LC_ALL: C.UTF-8
+    LANG: C.UTF8
     # DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
   script:
     - pipenv install --dev
