@@ -2,8 +2,7 @@ from django.test import TestCase
 from django.test import Client
 from django.test.utils import setup_test_environment, teardown_test_environment
 
-from .models import Post
-
+from .models import Post, Block, HighlightBlock, TextBlock
 
 class PostTestCase(TestCase):
     def setUp(self):
@@ -12,6 +11,20 @@ class PostTestCase(TestCase):
     def test_correct_title(self):
         test_post = Post.objects.get(title="Test title")
         self.assertIsNotNone(test_post, 'Test post exists')
+
+
+class BlockTests(TestCase):
+    def test_contains_blocks(self):
+        test_post = Post.objects.create(title="Test post title")
+        test_post.save()
+        text_block = TextBlock(text="Text block", post=test_post)
+        text_block.save()
+        blocks = test_post.block_set.all()
+        self.assertEqual(len(blocks), 1, 'test_post has 1 block')
+        retrieved_block = blocks[0]
+        self.assertIsNotNone(retrieved_block, 'block exists')
+        self.assertIsInstance(retrieved_block, TextBlock, 'block is TextBlock')
+        self.assertEqual(retrieved_block.text, "Text block", 'block has the right text')
 
 
 class IndexViewTests(TestCase):
