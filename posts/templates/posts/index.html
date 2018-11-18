@@ -1,10 +1,18 @@
+{% extends "posts/base.html" %}
+
+{% block title %}Main page{% endblock %}
+
+{% block content %}
+
 {% if post_list %}
-    Post list:
-    <ul>
-        {% for post in post_list %}
-            <li><a href="{% url 'post' post.pk %} ">{{ post.title }}</a></li>
-        {% endfor %}
-    </ul>
+Post list:
+<ul>
+    {% for post in post_list %}
+    <li><a href="{% url 'post' post.pk %} ">{{ post.title }}</a></li>
+    {% endfor %}
+</ul>
 {% else %}
-    <p>No posts here.</p>
+<p>No posts here.</p>
 {% endif %}
+
+{% endblock %}
