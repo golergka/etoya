@@ -24,8 +24,6 @@ stages:
 
 test:
   stage: test
-  tags:
-    - shared-fi
   before_script:
     - python -V                                   # Print out python version for debugging
     - pip install pipenv
