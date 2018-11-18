@@ -4,6 +4,7 @@ from django.test.utils import setup_test_environment, teardown_test_environment
 
 from .models import Post, Block, HighlightBlock, TextBlock
 
+
 class PostTestCase(TestCase):
     def setUp(self):
         Post.objects.create(title="Test title")
@@ -14,10 +15,11 @@ class PostTestCase(TestCase):
 
 
 class BlockTests(TestCase):
-    def test_contains_blocks(self):
+    def test_post_contains_blocks(self):
         test_post = Post.objects.create(title="Test post title")
         test_post.save()
-        text_block = TextBlock(text="Text block", post=test_post)
+        text_block = TextBlock.create(post=test_post)
+        text_block.text = "Text block"
         text_block.save()
         blocks = test_post.block_set.all()
         self.assertEqual(len(blocks), 1, 'test_post has 1 block')
@@ -25,6 +27,21 @@ class BlockTests(TestCase):
         self.assertIsNotNone(retrieved_block, 'block exists')
         self.assertIsInstance(retrieved_block, TextBlock, 'block is TextBlock')
         self.assertEqual(retrieved_block.text, "Text block", 'block has the right text')
+
+    def test_block_order_unique(self):
+        test_post = Post.objects.create(title="Test post title")
+        test_post.save()
+
+        text_block = TextBlock.create(test_post)
+        text_block.save()
+        highlight_block = HighlightBlock.create(test_post)
+        highlight_block.save()
+
+        self.assertEqual(text_block.order, 0, 'first block order is 0')
+        self.assertEqual(highlight_block.order, 1, 'second block order is 1')
+
+        blocks = test_post.block_set.all()
+        self.assertEqual(len(blocks), 2, 'post has two blocks')
 
 
 class IndexViewTests(TestCase):
