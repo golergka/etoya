@@ -43,6 +43,28 @@ class BlockTests(TestCase):
         blocks = test_post.block_set.all()
         self.assertEqual(len(blocks), 2, 'post has two blocks')
 
+    def test_block_default_ordering(self):
+        test_post = Post.objects.create(title="Test post title")
+        test_post.save()
+        block1 = TextBlock.create(test_post)
+        block1.text = "Block1"
+        block1.save()
+        block2 = TextBlock.create(test_post)
+        block2.text = "Block2"
+        block2.save()
+
+        self.assertEqual(test_post.block_set.all()[0].text, "Block1",
+                         'first block in first place before changing order')
+        self.assertEqual(test_post.block_set.all()[1].text, "Block2",
+                         'second block in second place before changing order')
+
+        block1.order = 2
+        block1.save()
+
+        self.assertEqual(test_post.block_set.all()[0].text, "Block2",
+                         'second block in first place after changing order')
+        self.assertEqual(test_post.block_set.all()[1].text, "Block1",
+                         'second block in second place after changing order')
 
 class IndexViewTests(TestCase):
     def setUp(self):

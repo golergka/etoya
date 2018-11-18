@@ -16,6 +16,7 @@ class Block(PolymorphicModel):
 
     class Meta:
         unique_together = ('post', 'order',)
+        ordering = ('order',)
 
     @classmethod
     def create(cls, post: Post):
