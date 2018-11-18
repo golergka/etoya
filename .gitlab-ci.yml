@@ -54,4 +54,6 @@ test:
     # DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
   script:
     - pipenv install --dev
-    - pipenv run ./manage.py test
+    - pipenv run coverage run --source='.' manage.py test
+    - coverage report -m
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
