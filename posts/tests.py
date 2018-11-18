@@ -13,7 +13,8 @@ class PostTestCase(TestCase):
         test_post = Post.objects.get(title="Test title")
         self.assertIsNotNone(test_post, 'Test post exists')
 
-class IndexViewTestCase(TestCase):
+
+class IndexViewTests(TestCase):
     def setUp(self):
         Post.objects.create(title="Post1")
         Post.objects.create(title="Post2")
@@ -29,3 +30,19 @@ class IndexViewTestCase(TestCase):
         self.assertEqual(post_list[0].title, 'Post1', 'post_list post 1 has correct title')
         self.assertEqual(post_list[1].title, 'Post2', 'post_list post 2 has correct title')
 
+
+class PostViewTests(TestCase):
+    client = Client()
+
+    def test_post_wrong_id(self):
+        response = self.client.get('/234/')
+        self.assertEqual(response.status_code, 404, "Absent post status code 404")
+
+    def test_post_simple(self):
+        created_post = Post.objects.create(title="Test post title")
+        response = self.client.get('/' + str(created_post.pk) + '/')
+        self.assertEqual(response.status_code, 200, 'Existing post view code 200')
+
+        loaded_post = response.context['post']
+        self.assertIsNotNone(loaded_post, 'post exists')
+        self.assertEqual(loaded_post.title, "Test post title", "post has correct title")

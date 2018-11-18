@@ -2,7 +2,7 @@
     Post list:
     <ul>
         {% for post in post_list %}
-            <li>{{ post.title }}</li>
+            <li><a href="/{{ post.pk }}">{{ post.title }}</a></li>
         {% endfor %}
     </ul>
 {% else %}
