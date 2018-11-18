@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 django-polymorphic = "*"
 coverage = "*"
+django-coverage-plugin = "*"
 
 [requires]
 python_version = "3.7"
