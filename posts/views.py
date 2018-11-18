@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 
 from .models import Post
@@ -13,9 +13,6 @@ def index(request):
 
 
 def post(request, post_id):
-    try:
-        post_obj = Post.objects.get(pk=post_id)
-    except Post.DoesNotExist:
-        raise Http404("Post does not exist")
+    post_obj = get_object_or_404(Post, pk=post_id)
     return render(request, 'posts/post.html', {'post': post_obj})
 
