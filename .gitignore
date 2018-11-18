@@ -9,4 +9,3 @@ db.sqlite3
 
 # Coverage test results
 .coverage
-coverage/
