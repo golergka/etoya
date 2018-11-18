@@ -55,5 +55,5 @@ test:
   script:
     - pipenv install --dev
     - pipenv run coverage run --source='.' manage.py test
-    - coverage report -m
+    - pipenv run coverage report -m
   coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
