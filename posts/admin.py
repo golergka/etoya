@@ -1,4 +1,26 @@
 from django.contrib import admin
-from .models import Post
+from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-admin.site.register(Post)
+from .models import Post, Block, HighlightBlock, TextBlock
+
+
+class BlockInline(StackedPolymorphicInline):
+    class HighlightBlockInline(StackedPolymorphicInline.Child):
+        model = HighlightBlock
+
+    class TextBlockInline(StackedPolymorphicInline.Child):
+        model = TextBlock
+
+    model = Block
+    child_inlines = (
+        HighlightBlockInline,
+        TextBlockInline
+    )
+
+
+@admin.register(Post)
+class PostAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['title']})
+    ]
+    inlines = (BlockInline, )
