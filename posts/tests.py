@@ -66,6 +66,7 @@ class BlockTests(TestCase):
         self.assertEqual(test_post.block_set.all()[1].text, "Block1",
                          'second block in second place after changing order')
 
+
 class IndexViewTests(TestCase):
     def setUp(self):
         Post.objects.create(title="Post1")
@@ -98,3 +99,17 @@ class PostViewTests(TestCase):
         loaded_post = response.context['post']
         self.assertIsNotNone(loaded_post, 'post exists')
         self.assertEqual(loaded_post.title, "Test post title", "post has correct title")
+
+    def test_blocks(self):
+        post = Post.objects.create()
+        post.save()
+        text_block = TextBlock.create(post)
+        text_block.text = "Text block"
+        text_block.save()
+        highlight_block = HighlightBlock.create(post)
+        highlight_block.text = "Highlight block"
+        highlight_block.save()
+
+        response = self.client.get('/' + str(post.pk) + '/')
+        blocks = response.context['blocks']
+        self.assertEqual(len(blocks), 2, 'Post has two blocks')

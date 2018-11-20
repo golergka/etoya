@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import Http404
+from django.template import loader
 
-from .models import Post
+from .models import Post, Block, TextBlock, HighlightBlock
 
 
 def index(request):
@@ -14,5 +14,20 @@ def index(request):
 
 def post(request, post_id):
     post_obj = get_object_or_404(Post, pk=post_id)
-    return render(request, 'posts/post.html', {'post': post_obj})
+    rendered_blocks = []
+    for block in post_obj.block_set.all():
+        template = get_block_template(block)
+        rendered_blocks.append(template.render({'block': block}))
+    return render(request, 'posts/post/post.html',
+                  {
+                      'post': post_obj,
+                      'blocks': rendered_blocks,
+                  })
 
+
+def get_block_template(block: Block):
+    if isinstance(block, TextBlock):
+        return loader.get_template('posts/post/blocks/text.html')
+    if isinstance(block, HighlightBlock):
+        return loader.get_template('posts/post/blocks/highlight.html')
+    raise ValueError('Unexpected block class: ' + type(block).__name__)

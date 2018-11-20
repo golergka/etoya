@@ -4,6 +4,10 @@
 
 {% block content %}
 
-Post title: {{ post.title }}
+    Post title: {{ post.title }}
+
+    {% for block in blocks %}
+        <div>{{ block }}</div>
+    {% endfor %}
 
 {% endblock %}
