@@ -4,10 +4,27 @@
 
 {% block content %}
 
-    Post title: {{ post.title }}
+<main role="main" class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center">
+                <h1 class="blog-post-title">{{ post.title }}</h1>
+                <p class="blog-post-meta">January 1, 2014 by <a href="https://getbootstrap.com/docs/4.1/examples/blog/#">Mark</a></p>
+                <p class="lead">
+                    This is some lead text.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test image block - move to separate block after S3 storage is implemented -->
+    <div hidden>
+        <img src="img/1.jpeg" class="blog-post-block blog-post-image" width:100%" />
+    </div>
 
     {% for block in blocks %}
-        <div>{{ block }}</div>
+    {{ block }}
     {% endfor %}
+</main>
 
 {% endblock %}
