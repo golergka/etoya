@@ -2,7 +2,7 @@ from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-from .models import Post, Block, HighlightBlock, TextBlock, IndexConfiguration
+from .models import Author, Post, Block, HighlightBlock, TextBlock, IndexConfiguration
 
 
 class BlockInline(StackedPolymorphicInline):
@@ -27,4 +27,5 @@ class PostAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
     inlines = (BlockInline, )
 
 
+admin.site.register(Author)
 admin.site.register(IndexConfiguration, SingletonModelAdmin)

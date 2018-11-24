@@ -1,6 +1,6 @@
 {% extends "posts/base.html" %}
 
-{% block title %}Post {{ post.title }}{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,7 @@
         <div class="col-md-8">
             <div class="text-center">
                 <h1 class="blog-post-title">{{ post.title }}</h1>
-                <p class="blog-post-meta">January 1, 2014 by <a href="https://getbootstrap.com/docs/4.1/examples/blog/#">Mark</a></p>
+                <p class="blog-post-meta">January 1, 2014 by <a href="{% url 'author' post.author.pk %}">{{ post.author.name }}</a></p>
                 <p class="lead">
                     This is some lead text.
                 </p>

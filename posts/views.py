@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 
-from .models import Post, Block, TextBlock, HighlightBlock, IndexConfiguration
+from .models import Author, Post, Block, TextBlock, HighlightBlock, IndexConfiguration
 
 
 def index(request):
@@ -25,6 +25,11 @@ def post(request, post_id):
                       'post': post_obj,
                       'blocks': rendered_blocks,
                   })
+
+
+def author(request, author_id):
+    author_obj = get_object_or_404(Author, pk=author_id)
+    return render(request, 'posts/author.html', {'author': author_obj})
 
 
 def get_block_template(block: Block):

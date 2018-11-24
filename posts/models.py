@@ -3,10 +3,18 @@ from polymorphic.models import PolymorphicModel
 from solo.models import SingletonModel
 
 
+class Author(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
 class Post(models.Model):
     """A single post, main feature of the site"""
     title = models.CharField(max_length=200)
     lead = models.TextField(max_length=1000)
+    author = models.ForeignKey(Author, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.title
