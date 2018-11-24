@@ -1,13 +1,15 @@
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 
-from .models import Post, Block, TextBlock, HighlightBlock
+from .models import Post, Block, TextBlock, HighlightBlock, IndexConfiguration
 
 
 def index(request):
+    config = IndexConfiguration.get_solo()
     post_list = Post.objects.all()
     context = {
         'post_list': post_list,
+        'featured_post': config.featured_post
     }
     return render(request, 'posts/index.html', context)
 

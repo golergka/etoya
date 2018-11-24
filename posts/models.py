@@ -1,5 +1,6 @@
 from django.db import models
 from polymorphic.models import PolymorphicModel
+from solo.models import SingletonModel
 
 
 class Post(models.Model):
@@ -32,3 +33,11 @@ class TextBlock(Block):
 
 class HighlightBlock(Block):
     text = models.TextField(max_length=1000)
+
+
+class IndexConfiguration(SingletonModel):
+    featured_post = models.ForeignKey(
+        Post, models.SET_NULL, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Index page configuration"

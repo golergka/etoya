@@ -5,12 +5,15 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+autopep8 = "*"
+pylint-django = "*"
 
 [packages]
 django = "*"
 django-polymorphic = "*"
 coverage = "*"
 django-coverage-plugin = "*"
+django-solo = "*"
 
 [requires]
 python_version = "3.7"

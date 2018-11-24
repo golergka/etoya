@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import Client
 from django.test.utils import setup_test_environment, teardown_test_environment
 
-from .models import Post, Block, HighlightBlock, TextBlock
+from .models import Post, Block, HighlightBlock, TextBlock, IndexConfiguration
 
 
 class PostTestCase(TestCase):
@@ -26,7 +26,8 @@ class BlockTests(TestCase):
         retrieved_block = blocks[0]
         self.assertIsNotNone(retrieved_block, 'block exists')
         self.assertIsInstance(retrieved_block, TextBlock, 'block is TextBlock')
-        self.assertEqual(retrieved_block.text, "Text block", 'block has the right text')
+        self.assertEqual(retrieved_block.text, "Text block",
+                         'block has the right text')
 
     def test_block_order_unique(self):
         test_post = Post.objects.create(title="Test post title")
@@ -68,11 +69,9 @@ class BlockTests(TestCase):
 
 
 class IndexViewTests(TestCase):
-    def setUp(self):
+    def test_correct_post_list(self):
         Post.objects.create(title="Post1")
         Post.objects.create(title="Post2")
-
-    def test_correct_post_list(self):
         client = Client()
         response = client.get('/')
         self.assertEqual(response.status_code, 200, 'Response status code 200')
@@ -80,8 +79,35 @@ class IndexViewTests(TestCase):
         post_list = response.context['post_list']
         self.assertIsNotNone(post_list, 'post_list exists')
         self.assertEqual(len(post_list), 2, 'post_list has 2 posts')
-        self.assertEqual(post_list[0].title, 'Post1', 'post_list post 1 has correct title')
-        self.assertEqual(post_list[1].title, 'Post2', 'post_list post 2 has correct title')
+        self.assertEqual(post_list[0].title, 'Post1',
+                         'post_list post 1 has correct title')
+        self.assertEqual(post_list[1].title, 'Post2',
+                         'post_list post 2 has correct title')
+
+    def test_featured_post_none(self):
+        index_config = IndexConfiguration.get_solo()
+        index_config.featured_post = None
+        client = Client()
+
+        response = client.get('/')
+
+        self.assertIsNone(
+            response.context['featured_post'], 'Context does not have featured post')
+
+    def test_featured_post_exists(self):
+        post = Post.objects.create(title="Featured post")
+        post.save()
+        index_config = IndexConfiguration.get_solo()
+        index_config.featured_post = post
+        index_config.save()
+        client = Client()
+
+        response = client.get('/')
+
+        self.assertIsNotNone(
+            response.context['featured_post'], 'Context has featured post')
+        self.assertEqual(
+            response.context['featured_post'].title, 'Featured post', 'Context has correct featured post')
 
 
 class PostViewTests(TestCase):
@@ -89,16 +115,19 @@ class PostViewTests(TestCase):
 
     def test_post_wrong_id(self):
         response = self.client.get('/234/')
-        self.assertEqual(response.status_code, 404, "Absent post status code 404")
+        self.assertEqual(response.status_code, 404,
+                         "Absent post status code 404")
 
     def test_post_simple(self):
         created_post = Post.objects.create(title="Test post title")
         response = self.client.get('/' + str(created_post.pk) + '/')
-        self.assertEqual(response.status_code, 200, 'Existing post view code 200')
+        self.assertEqual(response.status_code, 200,
+                         'Existing post view code 200')
 
         loaded_post = response.context['post']
         self.assertIsNotNone(loaded_post, 'post exists')
-        self.assertEqual(loaded_post.title, "Test post title", "post has correct title")
+        self.assertEqual(loaded_post.title, "Test post title",
+                         "post has correct title")
 
     def test_blocks(self):
         post = Post.objects.create()
