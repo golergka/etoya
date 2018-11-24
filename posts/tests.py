@@ -1,77 +1,116 @@
 from django.test import TestCase
 from django.test import Client
-from django.test.utils import setup_test_environment, teardown_test_environment
 
-from .models import Post, Block, HighlightBlock, TextBlock, IndexConfiguration
+from .models import Author, Post, HighlightBlock, TextBlock, IndexConfiguration
 
 
-class PostTestCase(TestCase):
+class AppTestCase(TestCase):
     def setUp(self):
-        Post.objects.create(title="Test title")
+        self.author = Author.objects.create(name='Default author')
+        self.author.save()
 
-    def test_correct_title(self):
-        test_post = Post.objects.get(title="Test title")
-        self.assertIsNotNone(test_post, 'Test post exists')
+    def tearDown(self):
+        if self.author:
+            self.author.delete()
 
 
-class BlockTests(TestCase):
+class PostBaseTestCase(AppTestCase):
+    def setUp(self):
+        super().setUp()
+        self.post = Post.objects.create(
+            title="Test title", author=self.author, lead="Test lead")
+        self.post.save()
+
+    def tearDown(self):
+        if self.post:
+            self.post.delete()
+        super().tearDown()
+
+
+class PostCreateTestCase(PostBaseTestCase):
+    def test_post_exists(self):
+        self.assertIsNotNone(self.post)
+
+    def test_post_has_correct_title(self):
+        self.assertEqual(self.post.title, "Test title")
+
+    def test_post_has_correct_lead(self):
+        self.assertEqual(self.post.lead, "Test lead")
+
+
+class SingleBlockTestCase(PostBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.block = TextBlock.create(post=self.post)
+        self.block.text = "Text block"
+        self.block.save()
+
+    def tearDown(self):
+        self.block.delete()
+        super().tearDown()
+
     def test_post_contains_blocks(self):
-        test_post = Post.objects.create(title="Test post title")
-        test_post.save()
-        text_block = TextBlock.create(post=test_post)
-        text_block.text = "Text block"
-        text_block.save()
-        blocks = test_post.block_set.all()
-        self.assertEqual(len(blocks), 1, 'test_post has 1 block')
+        blocks = self.post.block_set.all()
+        self.assertEqual(len(blocks), 1, 'post has 1 block')
         retrieved_block = blocks[0]
         self.assertIsNotNone(retrieved_block, 'block exists')
         self.assertIsInstance(retrieved_block, TextBlock, 'block is TextBlock')
         self.assertEqual(retrieved_block.text, "Text block",
                          'block has the right text')
 
-    def test_block_order_unique(self):
-        test_post = Post.objects.create(title="Test post title")
-        test_post.save()
 
-        text_block = TextBlock.create(test_post)
-        text_block.save()
-        highlight_block = HighlightBlock.create(test_post)
-        highlight_block.save()
+class MultipleBlockTestCase(PostBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.first_block = TextBlock.create(self.post)
+        self.first_block.text = "First block"
+        self.first_block.save()
+        self.second_block = HighlightBlock.create(self.post)
+        self.second_block.text = "Second block"
+        self.second_block.save()
 
-        self.assertEqual(text_block.order, 0, 'first block order is 0')
-        self.assertEqual(highlight_block.order, 1, 'second block order is 1')
+    def tearDown(self):
+        self.first_block.delete()
+        self.second_block.delete()
 
-        blocks = test_post.block_set.all()
+    def test_block_order(self):
+        self.assertEqual(self.first_block.order, 0, 'first block order is 0')
+        self.assertEqual(self.second_block.order, 1, 'second block order is 1')
+
+    def test_post_block_set_length(self):
+        blocks = self.post.block_set.all()
         self.assertEqual(len(blocks), 2, 'post has two blocks')
 
-    def test_block_default_ordering(self):
-        test_post = Post.objects.create(title="Test post title")
-        test_post.save()
-        block1 = TextBlock.create(test_post)
-        block1.text = "Block1"
-        block1.save()
-        block2 = TextBlock.create(test_post)
-        block2.text = "Block2"
-        block2.save()
-
-        self.assertEqual(test_post.block_set.all()[0].text, "Block1",
+    def test_block_change_order(self):
+        blocks = self.post.block_set
+        self.assertEqual(blocks.all()[0].text, "First block",
                          'first block in first place before changing order')
-        self.assertEqual(test_post.block_set.all()[1].text, "Block2",
+        self.assertEqual(blocks.all()[1].text, "Second block",
                          'second block in second place before changing order')
 
-        block1.order = 2
-        block1.save()
+        self.first_block.order = 2
+        self.first_block.save()
 
-        self.assertEqual(test_post.block_set.all()[0].text, "Block2",
+        self.assertEqual(blocks.all()[0].text, "Second block",
                          'second block in first place after changing order')
-        self.assertEqual(test_post.block_set.all()[1].text, "Block1",
+        self.assertEqual(blocks.all()[1].text, "First block",
                          'second block in second place after changing order')
 
 
-class IndexViewTests(TestCase):
+class IndexViewPostsTestCase(AppTestCase):
+    def setUp(self):
+        super().setUp()
+        self.first_post = Post.objects.create(
+            title="First post", author=self.author)
+        self.second_post = Post.objects.create(
+            title="Second post", author=self.author)
+
+    def tearDown(self):
+        self.first_post.delete()
+        self.second_post.delete()
+        super().tearDown()
+
     def test_correct_post_list(self):
-        Post.objects.create(title="Post1")
-        Post.objects.create(title="Post2")
         client = Client()
         response = client.get('/')
         self.assertEqual(response.status_code, 200, 'Response status code 200')
@@ -79,27 +118,35 @@ class IndexViewTests(TestCase):
         post_list = response.context['post_list']
         self.assertIsNotNone(post_list, 'post_list exists')
         self.assertEqual(len(post_list), 2, 'post_list has 2 posts')
-        self.assertEqual(post_list[0].title, 'Post1',
+        self.assertEqual(post_list[0].title, 'First post',
                          'post_list post 1 has correct title')
-        self.assertEqual(post_list[1].title, 'Post2',
+        self.assertEqual(post_list[1].title, 'Second post',
                          'post_list post 2 has correct title')
 
-    def test_featured_post_none(self):
-        index_config = IndexConfiguration.get_solo()
-        index_config.featured_post = None
-        client = Client()
 
+class IndexViewWithoutFeaturedTestCase(AppTestCase):
+    def test_featured_post_is_none(self):
+        client = Client()
         response = client.get('/')
 
         self.assertIsNone(
             response.context['featured_post'], 'Context does not have featured post')
 
-    def test_featured_post_exists(self):
-        post = Post.objects.create(title="Featured post")
-        post.save()
+
+class IndexViewWithFeaturedPostTestCase(PostBaseTestCase):
+    def setUp(self):
+        super().setUp()
         index_config = IndexConfiguration.get_solo()
-        index_config.featured_post = post
+        index_config.featured_post = self.post
         index_config.save()
+
+    def tearDown(self):
+        index_config = IndexConfiguration.get_solo()
+        index_config.featured_post = None
+        index_config.save()
+        super().tearDown()
+
+    def test_featured_post_exists(self):
         client = Client()
 
         response = client.get('/')
@@ -107,38 +154,37 @@ class IndexViewTests(TestCase):
         self.assertIsNotNone(
             response.context['featured_post'], 'Context has featured post')
         self.assertEqual(
-            response.context['featured_post'].title, 'Featured post', 'Context has correct featured post')
+            response.context['featured_post'].title, 'Test title', 'Context has correct featured post')
 
 
-class PostViewTests(TestCase):
+class PostViewTestCase(PostBaseTestCase):
     client = Client()
 
-    def test_post_wrong_id(self):
-        response = self.client.get('/234/')
-        self.assertEqual(response.status_code, 404,
-                         "Absent post status code 404")
+    def setUp(self):
+        super().setUp()
+        self.text_block = TextBlock.create(self.post)
+        self.text_block.text = "Text block"
+        self.text_block.save()
+        self.highlight_block = HighlightBlock.create(self.post)
+        self.highlight_block.text = "Highlight block"
+        self.highlight_block.save()
+        self.response = self.client.get('/' + str(self.post.pk) + '/')
 
-    def test_post_simple(self):
-        created_post = Post.objects.create(title="Test post title")
-        response = self.client.get('/' + str(created_post.pk) + '/')
-        self.assertEqual(response.status_code, 200,
+    def tearDown(self):
+        self.text_block.delete()
+        self.highlight_block.delete()
+        super().tearDown()
+
+    def test_response_status(self):
+        self.assertEqual(self.response.status_code, 200,
                          'Existing post view code 200')
 
-        loaded_post = response.context['post']
+    def test_response_details(self):
+        loaded_post = self.response.context['post']
         self.assertIsNotNone(loaded_post, 'post exists')
-        self.assertEqual(loaded_post.title, "Test post title",
+        self.assertEqual(loaded_post.title, "Test title",
                          "post has correct title")
 
-    def test_blocks(self):
-        post = Post.objects.create()
-        post.save()
-        text_block = TextBlock.create(post)
-        text_block.text = "Text block"
-        text_block.save()
-        highlight_block = HighlightBlock.create(post)
-        highlight_block.text = "Highlight block"
-        highlight_block.save()
-
-        response = self.client.get('/' + str(post.pk) + '/')
-        blocks = response.context['blocks']
+    def test_response_blocks(self):
+        blocks = self.response.context['blocks']
         self.assertEqual(len(blocks), 2, 'Post has two blocks')
