@@ -22,7 +22,7 @@ class BlockInline(StackedPolymorphicInline):
 @admin.register(Post)
 class PostAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['title']})
+        (None, {'fields': ['title', 'lead']})
     ]
     inlines = (BlockInline, )
 

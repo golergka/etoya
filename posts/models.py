@@ -6,6 +6,7 @@ from solo.models import SingletonModel
 class Post(models.Model):
     """A single post, main feature of the site"""
     title = models.CharField(max_length=200)
+    lead = models.TextField(max_length=1000)
 
     def __str__(self):
         return self.title
